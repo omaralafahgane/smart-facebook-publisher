@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { Card, LoadingSpinner, Alert } from '@/components'
 
 interface DashboardStats {
   stats: {
@@ -134,20 +135,85 @@ export default function DashboardPage() {
         ) : (
           <>
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              {statCards.map((stat, index) => (
-                <div key={index} className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-gray-600 text-sm">{stat.label}</p>
-                      <p className="text-3xl font-bold text-gray-900 mt-2">
-                        {stat.value}
-                      </p>
-                    </div>
-                    <div className="text-4xl">{stat.icon}</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {/* Total Posts */}
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow p-6 border-l-4 border-blue-600">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-700 text-sm font-medium">إجمالي المنشورات</p>
+                    <p className="text-4xl font-bold text-blue-600 mt-2">
+                      {stats?.stats.totalPosts || 0}
+                    </p>
                   </div>
+                  <div className="text-5xl">📄</div>
                 </div>
-              ))}
+              </div>
+
+              {/* Published Posts */}
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg shadow p-6 border-l-4 border-green-600">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-700 text-sm font-medium">المنشورات المنشورة</p>
+                    <p className="text-4xl font-bold text-green-600 mt-2">
+                      {stats?.stats.publishedPosts || 0}
+                    </p>
+                  </div>
+                  <div className="text-5xl">✅</div>
+                </div>
+              </div>
+
+              {/* Scheduled Posts */}
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow p-6 border-l-4 border-blue-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-700 text-sm font-medium">المجدولة</p>
+                    <p className="text-4xl font-bold text-blue-500 mt-2">
+                      {stats?.stats.scheduledPosts || 0}
+                    </p>
+                  </div>
+                  <div className="text-5xl">⏰</div>
+                </div>
+              </div>
+
+              {/* Draft Posts */}
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg shadow p-6 border-l-4 border-gray-600">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-700 text-sm font-medium">المسودات</p>
+                    <p className="text-4xl font-bold text-gray-600 mt-2">
+                      {stats?.stats.draftPosts || 0}
+                    </p>
+                  </div>
+                  <div className="text-5xl">📝</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Secondary Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg shadow p-6 border-l-4 border-purple-600">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-700 text-sm font-medium">المجموعات المتصلة</p>
+                    <p className="text-4xl font-bold text-purple-600 mt-2">
+                      {stats?.stats.totalGroups || 0}
+                    </p>
+                  </div>
+                  <div className="text-5xl">👥</div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg shadow p-6 border-l-4 border-orange-600">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-700 text-sm font-medium">الحملات الإعلانية</p>
+                    <p className="text-4xl font-bold text-orange-600 mt-2">
+                      {stats?.stats.totalCampaigns || 0}
+                    </p>
+                  </div>
+                  <div className="text-5xl">📢</div>
+                </div>
+              </div>
             </div>
 
             {/* Quick Actions */}

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Alert } from '@/components'
 
 export default function CreatePostPage() {
   const router = useRouter()
@@ -19,6 +20,9 @@ export default function CreatePostPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiVariants, setAiVariants] = useState<string[]>([])
+  const [showAiVariants, setShowAiVariants] = useState(false)
 
   const groups = [
     { id: '1', name: 'مجموعة الكاميرات' },
@@ -63,6 +67,49 @@ export default function CreatePostPage() {
     } catch (err: any) {
       setError(err.message)
     }
+  }
+
+  const handleGenerateAIVariants = async () => {
+    if (!formData.content.trim()) {
+      setError('يرجى كتابة محتوى أولاً')
+      return
+    }
+
+    setAiLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/posts/ai-variant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: formData.content,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('فشل توليد النسخ الذكية')
+      }
+
+      const data = await response.json()
+      setAiVariants(data.variants || [])
+      setShowAiVariants(true)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
+  const handleSelectAIVariant = (variant: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      content: variant,
+    }))
+    setPreview(variant)
+    setShowAiVariants(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -121,9 +168,19 @@ export default function CreatePostPage() {
             <div className="bg-white rounded-lg shadow p-6 space-y-6">
               {/* Content */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  محتوى المنشور
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-semibold text-gray-900">
+                    محتوى المنشور
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleGenerateAIVariants}
+                    disabled={aiLoading || !formData.content.trim()}
+                    className="text-xs bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white px-3 py-1 rounded transition"
+                  >
+                    {aiLoading ? '🤖 جاري التوليد...' : '🤖 توليد نسخ ذكية'}
+                  </button>
+                </div>
                 <textarea
                   value={formData.content}
                   onChange={(e) => {
@@ -138,6 +195,26 @@ export default function CreatePostPage() {
                   {formData.content.length} / 5000
                 </p>
               </div>
+
+              {/* AI Variants */}
+              {showAiVariants && aiVariants.length > 0 && (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-purple-900 mb-3">🤖 النسخ الذكية المقترحة:</h4>
+                  <div className="space-y-2">
+                    {aiVariants.map((variant, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => handleSelectAIVariant(variant)}
+                        className="w-full text-left p-3 bg-white border border-purple-200 rounded hover:bg-purple-100 transition text-sm text-gray-800"
+                      >
+                        <p className="line-clamp-2">{variant}</p>
+                        <p className="text-xs text-purple-600 mt-1">اضغط للاختيار</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Image Upload */}
               <div>
