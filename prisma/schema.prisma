@@ -1,0 +1,130 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model FacebookAccount {
+  id            String     @id @default(cuid())
+  userId        String     @unique
+  accessToken   String     // Encrypted
+  refreshToken  String?
+  expiresAt     DateTime?
+  pages         Page[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([userId])
+}
+
+model Page {
+  id                String     @id @default(cuid())
+  facebookPageId    String     @unique
+  pageName          String
+  pageUrl           String
+  accessToken       String     // Encrypted
+  facebookAccount   FacebookAccount @relation(fields: [facebookAccountId], references: [id], onDelete: Cascade)
+  facebookAccountId String
+  groups            Group[]
+  posts             Post[]
+  campaigns         Campaign[]
+  publishLogs       PublishLog[]
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@index([facebookPageId])
+  @@index([facebookAccountId])
+}
+
+model Group {
+  id            String     @id @default(cuid())
+  groupUrl      String
+  groupName     String?
+  category      String     // cameras, smart_systems, local, offers
+  status        String     @default("available") // available, manual_only, unavailable
+  page          Page       @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId        String
+  posts         Post[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([pageId])
+  @@index([category])
+}
+
+model Post {
+  id            String     @id @default(cuid())
+  content       String
+  imageUrl      String?
+  videoUrl      String?
+  aiVariant     String?
+  hashtags      String?    // JSON array
+  page          Page       @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId        String
+  groups        Group[]
+  campaign      Campaign?  @relation(fields: [campaignId], references: [id])
+  campaignId    String?
+  schedule      Schedule?
+  publishLogs   PublishLog[]
+  status        String     @default("draft") // draft, scheduled, published, failed
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([pageId])
+  @@index([campaignId])
+  @@index([status])
+}
+
+model Campaign {
+  id            String     @id @default(cuid())
+  name          String
+  description   String?
+  page          Page       @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId        String
+  posts         Post[]
+  startDate     DateTime
+  endDate       DateTime?
+  status        String     @default("active") // active, paused, completed
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([pageId])
+}
+
+model Schedule {
+  id            String     @id @default(cuid())
+  post          Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId        String     @unique
+  type          String     @default("now") // now, after_hour, daily, custom
+  scheduledTime DateTime
+  recurrenceRule String?   // For cron jobs
+  isActive      Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([postId])
+}
+
+model PublishLog {
+  id            String     @id @default(cuid())
+  post          Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId        String
+  page          Page       @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId        String
+  status        String     // success, failed, pending
+  facebookPostId String?
+  errorMessage  String?
+  publishedAt   DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([postId])
+  @@index([pageId])
+  @@index([status])
+}
