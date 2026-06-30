@@ -1,0 +1,23 @@
+{
+  "buildCommand": "npm run build && npx prisma generate && npx prisma migrate deploy",
+  "devCommand": "next dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "nodeVersion": "20.x",
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "DIRECT_URL": "@direct_url",
+    "FACEBOOK_APP_ID": "@facebook_app_id",
+    "FACEBOOK_APP_SECRET": "@facebook_app_secret",
+    "OPENAI_API_KEY": "@openai_api_key",
+    "REDIS_URL": "@redis_url",
+    "JWT_SECRET": "@jwt_secret",
+    "NEXT_PUBLIC_APP_URL": "@next_public_app_url"
+  },
+  "regions": ["iad1"],
+  "functions": {
+    "api/**/*.ts": {
+      "maxDuration": 30
+    }
+  }
+}
