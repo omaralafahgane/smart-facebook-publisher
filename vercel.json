@@ -3,7 +3,6 @@
   "devCommand": "next dev",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "nodeVersion": "20.x",
   "env": {
     "DATABASE_URL": "@database_url",
     "DIRECT_URL": "@direct_url",
